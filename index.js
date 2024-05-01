@@ -7,7 +7,7 @@ const history = require('connect-history-api-fallback');
 const authRoute = require('./router/auth');
 
 const app = express();
-const portt = process.env.PORT || 3018;
+const portt = process.env.PORT || 3019;
 
 // Serve static files from the 'public' folder
 app.use(express.static(path.resolve(__dirname, './dist'), { maxAge : '1y', etag: false}));
@@ -28,12 +28,18 @@ app.listen( portt, () => {
 });
 
 
-fetch('http://localhost:'+portt+'/api/v1/auth/getUserData/tester@gmai.com', {
+const baseurl = process.env.PORT ? "https://ezezimalii.azurewebsites.net/" : 'http://localhost:'+portt;
+
+fetch(baseurl+'/api/v1/auth/insertFundingApp/', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
   },
-  body: JSON.stringify({"email" : "poofkie" , "profile_pic_url": "joo"}) 
+  body: JSON.stringify({
+    "title": "1dsEducasstion Enrichment Scholarship",
+    "summary": "Supporting academic excellence and educational opportunities for underprivileged students.",
+    "description": "This scholarship program aims to provide financial assistance to deserving students for pursuing higher education, vocational training, and skill development programs."
+  }) 
 })
 .then(response => response.json())
 .then(data => console.log(data))

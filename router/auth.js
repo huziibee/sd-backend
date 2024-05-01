@@ -1,5 +1,9 @@
 const { Router } = require("express");
 const { readerUserData, insertUserData, updateUserData } = require('../database/Users/index')
+const { insertFundingOpp } = require('../database/fundingOpps')
+
+const { insertFundingApp } = require('../database/fundApps')
+
 const router = Router();
 
 router.post('/getUserData/:id', async (req, res) => {
@@ -19,6 +23,28 @@ router.post('/insertUserData/', async (req, res) => {
         // console.log("moop");
         const { email, profile_pic_url } = req.body;
         const userData = await insertUserData(email, profile_pic_url);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.post('/insertFundingOpp/', async (req, res) => {
+    try {
+
+        const userData = await insertFundingOpp(req.body);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.post('/insertFundingApp/', async (req, res) => {
+    try {
+
+        const userData = await insertFundingApp(req.body);
         res.status(200).json(userData); 
     } catch (error) {
         console.error(error);
