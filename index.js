@@ -30,16 +30,16 @@ app.listen( portt, () => {
 
 const baseurl = process.env.PORT ? "https://ezezimalii.azurewebsites.net/" : 'http://localhost:'+portt;
 
-fetch(baseurl+'/api/v1/auth/insertFundingApp/', {
-  method: 'POST',
+fetch(baseurl+'/api/v1/auth/acceptOrDenyApplicant/', {
+  method: 'PUT',
   headers: {
     'Content-Type': 'application/json'
   },
   body: JSON.stringify({
-    "title": "1dsEducasstion Enrichment Scholarship",
-    "summary": "Supporting academic excellence and educational opportunities for underprivileged students.",
-    "description": "This scholarship program aims to provide financial assistance to deserving students for pursuing higher education, vocational training, and skill development programs."
-  }) 
+    "status": "Rejected",
+    "id": 10
+  }
+  ) 
 })
 .then(response => response.json())
 .then(data => console.log(data))

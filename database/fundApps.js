@@ -1,38 +1,36 @@
-const {sql , ConnectionPool } = require('mssql');
+const { sql, ConnectionPool } = require('mssql');
 
-const connectionString = `Server=tcp:ezezimalidbs.database.windows.net,1433;Initial Catalog=ezezimalidb;Persist Security Info=False;User ID=ezezimali_admin;Password=Ezimal11;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
+const { connectionString } = require('./config');
 
-// async function readerUserData(userID) {
-//     try {
-//         // Create a new connection pool
-//         const pool = new ConnectionPool(connectionString);
-//         await pool.connect();
 
-//         console.log("Reading rows from the Table...");
-//         const resultSet = await pool.request().query(`select profile_pic_url, user_type from [User] where email = '${userID}'`);
+// admin reads all funding applications
+async function readFundApps(userID) {
+    try {
+        // Create a new connection pool
+        const pool = new ConnectionPool(connectionString);
+        await pool.connect();
 
-//         let user = null;
-//         resultSet.recordset.forEach(row => {
-//             user = row;
-//         });
+        console.log("Reading rows from the fundersApps Table...");
+        const resultSet = await pool.request().query(`select * from [fundersApps] where evaluated = 0;`);
 
-//         // Close the connection pool
-//         await pool.close();
+        // Close the connection pool
+        await pool.close();
 
-//         return user;
-//     } catch (err) {
-//         console.error(err.message);
-//         throw err; // Re-throw the error to handle it in the caller
-//     }
-// }
+        return resultSet.recordset;
+    } catch (err) {
+        console.error(err.message);
+        throw err; // Re-throw the error to handle it in the caller
+    }
+}
 
+// aplly to be a fund manager 
 async function insertFundingApp(object) {
     try {
         // Create a new connection pool
         const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
-        console.log("Inserting data...");
+        console.log("Inserting data to fundersApps...");
 
         // Insert the row into the table
         const resultSet = await pool.request().query(`
@@ -68,6 +66,57 @@ async function insertFundingApp(object) {
     }
 }
 
+// admin evaluates funding applications 
+// approve or reject new fund managers
+async function updateFundingApp(object) {
+    try {
+        // Create a new connection pool
+        const pool = new ConnectionPool(connectionString);
+        await pool.connect();
+
+        console.log("Updating fundersApps!!")
+
+        // Update the row into the table
+        const resultSet = await pool.request().query(`
+        UPDATE [fundersApps]
+SET evaluated = 1
+WHERE applicant_email = '${object.email}';`);
+
+        // Close the connection pool
+        
+        let returnObj = { message: "Failure to Evaluate" };
+        
+        if (resultSet.rowsAffected[0] == 1) {
+            returnObj.message = "Successfully Evaluated and rejected";
+            
+            
+            if (object.verdict == 'approved'){
+                const response = await pool.request().query(`
+                UPDATE [User]
+                         SET user_type = 'Fund Manager'
+                         WHERE email = '${object.email}';`);
+                
+
+    if (response.rowsAffected[0] == 1) {
+        returnObj.message = "Successfully Evaluted and approved";
+    } else {
+        returnObj.message = "Failed to update user type";
+    }
+    
+                
+            }
+
+
+        }
+        
+        await pool.close();
+        console.log(returnObj);
+        return returnObj;
+    } catch (err) {
+        console.error(err.message);
+        throw err; // Re-throw the error to handle it in the caller
+    }
+}
 
 
 
@@ -75,5 +124,7 @@ async function insertFundingApp(object) {
 // updateUserData("fhddbdsdsjkf", "f")
 
 module.exports = {
-    insertFundingApp
+    insertFundingApp,
+    readFundApps,
+    updateFundingApp
 };

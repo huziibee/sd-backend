@@ -1,6 +1,6 @@
 const {sql , ConnectionPool } = require('mssql');
 
-const connectionString = `Server=tcp:ezezimalidbs.database.windows.net,1433;Initial Catalog=ezezimalidb;Persist Security Info=False;User ID=ezezimali_admin;Password=Ezimal11;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
+const { connectionString } = require('./config');
 
 // async function readerUserData(userID) {
 //     try {
@@ -25,6 +25,29 @@ const connectionString = `Server=tcp:ezezimalidbs.database.windows.net,1433;Init
 //         throw err; // Re-throw the error to handle it in the caller
 //     }
 // }
+
+
+async function readFundOpps() {
+    try {
+        // Create a new connection pool
+        const pool = new ConnectionPool(connectionString);
+        await pool.connect();
+
+        console.log("Reading rows from the funding_opportunities Table...");
+        const resultSet = await pool.request().query(`SELECT *
+        FROM [funding_opportunities]
+        WHERE approved = 1 AND end_date >= CAST(GETDATE() AS DATE);
+        `);
+
+        // Close the connection pool
+        await pool.close();
+
+        return resultSet.recordset;
+    } catch (err) {
+        console.error(err.message);
+        throw err; // Re-throw the error to handle it in the caller
+    }
+}
 
 async function insertFundingOpp(object) {
     try {
@@ -72,5 +95,6 @@ async function insertFundingOpp(object) {
 // updateUserData("fhddbdsdsjkf", "f")
 
 module.exports = {
-    insertFundingOpp
+    insertFundingOpp,
+    readFundOpps
 };

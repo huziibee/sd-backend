@@ -1,23 +1,3 @@
+const connectionString = `Server=tcp:ezezimalidbs.database.windows.net,1433;Initial Catalog=ezezimalidb;Persist Security Info=False;User ID=ezezimali_admin;Password=Ezimal11;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;`;
 
-const config = {
-    user: 'ezezimali_admin',
-    password: 'Ezimal11',
-    server: 'ezezimalidbs.database.windows.net',
-    database: 'ezezimalidb', // replace 'your_database_name' with your actual database name
-    authentication: {
-        type: 'default',
-        options: {
-            userName: 'ezezimali_admin',
-            password: 'Ezimal11'
-        }
-    },
-    options: {
-        encrypt: true
-    }
-};
-
-console.log("Starting...");
-
-module.exports = config;
-
-
+module.exports = { connectionString };
