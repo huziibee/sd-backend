@@ -1,12 +1,9 @@
-const {sql , ConnectionPool } = require('mssql');
-
+const { ConnectionPool } = require('mssql');
 const { connectionString } = require('./config');
 
-
-async function readapplicationsForFundingOpps (email) {
+async function readapplicationsForFundingOpps(email) {
+    const pool = new ConnectionPool(connectionString);
     try {
-        // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
         console.log("Reading rows from the applicationsForFundingOpps Table...");
@@ -16,25 +13,22 @@ async function readapplicationsForFundingOpps (email) {
         WHERE F.fund_manager_email = '${email}';
         `);
 
-        // Close the connection pool
-        await pool.close();
-
         return resultSet.recordset;
     } catch (err) {
         console.error(err.message);
-        throw err; // Re-throw the error to handle it in the caller
+        throw err;
+    } finally {
+        await pool.close();
     }
 }
 
 async function insertApplicationsForFundingOpps(object) {
+    const pool = new ConnectionPool(connectionString);
     try {
-        // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
         console.log("Inserting data into applicationsForFundingOpps...");
 
-        // Insert the row into the table
         const resultSet = await pool.request().query(`
         INSERT INTO applicationsForFundingOpps (applicant_email, fundingOpp_ID, applicant_motivation, applicant_documents)
 SELECT '${object.applicant_email}', ${object.fundingOpp_ID}, '${object.applicant_motivation}', '${object.applicant_documents}'
@@ -43,11 +37,7 @@ WHERE NOT EXISTS (
     FROM applicationsForFundingOpps
     WHERE applicant_email = '${object.applicant_email}' AND fundingOpp_ID = ${object.fundingOpp_ID}
 );
-
         `);
-
-        // Close the connection pool
-        await pool.close();
 
         let returnObj = { message: "Failure" };
 
@@ -59,28 +49,25 @@ WHERE NOT EXISTS (
         return returnObj;
     } catch (err) {
         console.error(err.message);
-        throw err; // Re-throw the error to handle it in the caller
+        throw err;
+    } finally {
+        await pool.close();
     }
 }
 
 async function updateApplicationsForFundingOpps(object) {
+    const pool = new ConnectionPool(connectionString);
     try {
-        // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
         console.log("Updating data in applicationsForFundingOpps...");
 
-        // Insert the row into the table
         const resultSet = await pool.request().query(`
         UPDATE applicationsForFundingOpps
         SET status = '${object.status}'
         WHERE id = ${object.id};
         `);
 
-        // Close the connection pool
-        await pool.close();
-
         let returnObj = { message: "Failure" };
 
         if (resultSet.rowsAffected[0] == 1) {
@@ -91,15 +78,11 @@ async function updateApplicationsForFundingOpps(object) {
         return returnObj;
     } catch (err) {
         console.error(err.message);
-        throw err; // Re-throw the error to handle it in the caller
+        throw err;
+    } finally {
+        await pool.close();
     }
 }
-
-
-
-
-// insertUserData("fhddbsjkf", "d")
-// updateUserData("fhddbdsdsjkf", "f")
 
 module.exports = {
     insertApplicationsForFundingOpps,
