@@ -23,7 +23,7 @@ async function readFundApps(userID) {
     }
 }
 
-// aplly to be a fund manager 
+// apply to be a fund manager 
 async function insertFundingApp(object) {
     try {
         // Create a new connection pool
