@@ -62,11 +62,7 @@ async function updateApplicationsForFundingOpps(object) {
 
         console.log("Updating data in applicationsForFundingOpps...");
 
-        const resultSet = await pool.request().query(`
-        UPDATE applicationsForFundingOpps
-        SET status = '${object.status}'
-        WHERE id = ${object.id};
-        `);
+        const resultSet = await pool.request().query(`UPDATE applicationsForFundingOpps SET status = '${object.status}' WHERE id = ${object.id};`);
 
         let returnObj = { message: "Failure" };
 
