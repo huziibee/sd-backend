@@ -23,7 +23,7 @@ async function readFundApps(userID) {
     }
 }
 
-// aplly to be a fund manager 
+// apply to be a fund manager 
 async function insertFundingApp(object) {
     try {
         // Create a new connection pool
@@ -94,18 +94,13 @@ WHERE applicant_email = '${object.email}';`);
             
             if (object.verdict == 'Approved'){
                 const response = await pool.request().query(`
-                UPDATE [User]
-                         SET user_type = 'Fund Manager'
-                         WHERE email = '${object.email}';`);
-                
+                UPDATE [User] SET user_type = 'Fund Manager' WHERE email = '${object.email}';`);
 
-    if (response.rowsAffected[0] == 1) {
-        returnObj.message = "Successfully Evaluted and approved";
-    } else {
-        returnObj.message = "Failed to update user type";
-    }
-    
-                
+                if (response.rowsAffected[0] == 1) {
+                    returnObj.message = "Successfully Evaluted and approved";
+                } else {
+                    returnObj.message = "Failed to update user type";
+                }
             }
 
 

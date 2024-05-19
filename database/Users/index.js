@@ -114,7 +114,7 @@ async function insertUserData(email, profile_pic_url) {
 
         
 
-            console.log("Inserting!!")
+        console.log("Inserting!!")
         const resultSet = await poolConnection.request().query(`IF NOT EXISTS (SELECT 1 FROM [User] WHERE email = '${email}')
         BEGIN
             INSERT INTO [User] (email, profile_pic_url, user_type, created_at)
@@ -149,7 +149,7 @@ async function updateUserPfp(email, profile_pic_url) {
         const poolConnection = await sql.connect(config);
 
 
-            console.log("Updating!!")
+        console.log("Updating!!")
         const resultSet = await poolConnection.request().query(`
         UPDATE [User]
         SET profile_pic_url = '${profile_pic_url}'

@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path');
 const history = require('connect-history-api-fallback');
 const authRoute = require('./router/auth');
-
+ 
 const app = express();
 const portt = process.env.PORT || 3019;
 
