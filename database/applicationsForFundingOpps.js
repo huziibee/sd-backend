@@ -10,10 +10,13 @@ async function readapplicationsForFundingOpps (email) {
         await pool.connect();
 
         console.log("Reading rows from the applicationsForFundingOpps Table...");
-        const resultSet = await pool.request().query(`SELECT A.*
+        const resultSet = await pool.request().query(`
+        SELECT A.*, U.name
         FROM applicationsForFundingOpps A
         JOIN funding_opportunities F ON A.fundingOpp_ID = F.id
+        JOIN [User] U ON A.applicant_email = U.email
         WHERE F.fund_manager_email = '${email}';
+        
         `);
 
         // Close the connection pool

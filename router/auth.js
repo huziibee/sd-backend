@@ -1,6 +1,6 @@
 const { Router } = require("express");
-const { readerUserData, insertUserData, updateUserData } = require('../database/Users/index')
-const { insertFundingOpp,readFundOpps } = require('../database/fundingOpps')
+const { readerUserData, insertUserData, updateUserPfp, blockUser, readAllUsers } = require('../database/Users/index')
+const { insertFundingOpp,readFundOpps, readFundOppsForFM, updateFundingOpp } = require('../database/fundingOpps')
 
 const { insertFundingApp, readFundApps, updateFundingApp } = require('../database/fundApps')
 
@@ -43,6 +43,18 @@ router.post('/insertApplicationsForFundingOpps/', async (req, res) => {
     }
 });
 
+router.put('/updateFundingOpp/', async (req, res) => {
+    try {
+        // console.log(req.body);
+        const userData = await updateFundingOpp(req.body);
+
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
 router.put('/acceptOrDenyApplicant/', async (req, res) => {
     try {
         console.log(req.body);
@@ -55,9 +67,19 @@ router.put('/acceptOrDenyApplicant/', async (req, res) => {
     }
 });
 
-router.post('/readFundOpps/', async (req, res) => {
+router.post('/readFundOpps/:id', async (req, res) => {
     try {
-        const userData = await readFundOpps();
+        const userData = await readFundOpps(req.params.id);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.post('/readFundOppsForFM/:id', async (req, res) => {
+    try {
+        const userData = await readFundOppsForFM(req.params.id);
         res.status(200).json(userData); 
     } catch (error) {
         console.error(error);
@@ -123,11 +145,9 @@ router.post('/insertFundingApp/', async (req, res) => {
     }
 });
 
-router.put('/updateUserProfilePic/', async (req, res) => {
+router.post('/readAllUsers/', async (req, res) => {
     try {
-        // console.log("moop");
-        const { email, profile_pic_url } = req.body;
-        const userData = await updateUserData(email, profile_pic_url);
+        const userData = await readAllUsers();
         res.status(200).json(userData); 
     } catch (error) {
         console.error(error);
@@ -135,6 +155,29 @@ router.put('/updateUserProfilePic/', async (req, res) => {
     }
 });
 
+router.put('/updateUserProfilePic/', async (req, res) => {
+    try {
+        // console.log("moop");
+        const { email, profile_pic_url } = req.body;
+        const userData = await updateUserPfp(email, profile_pic_url);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.put('/blockUser/', async (req, res) => {
+    try {
+        // console.log("moop");
+        const { email } = req.body;
+        const userData = await blockUser(email);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
 
 
 

@@ -30,17 +30,24 @@ app.listen( portt, () => {
 
 const baseurl = process.env.PORT ? "https://ezezimalii.azurewebsites.net/" : 'http://localhost:'+portt;
 
-fetch(baseurl+'/api/v1/auth/acceptOrDenyApplicant/', {
-  method: 'PUT',
-  headers: {
-    'Content-Type': 'application/json'
-  },
-  body: JSON.stringify({
-    "status": "Rejected",
-    "id": 10
-  }
-  ) 
-})
-.then(response => response.json())
-.then(data => console.log(data))
-.catch(error => console.error('Error:', error));
+const currentDate = new Date();
+
+
+// fetch(baseurl+'/api/v1/auth/updateFundingOpp/', {
+//   method: 'PUT',
+//   headers: {
+//     'Content-Type': 'application/json'
+//   },
+//   body: JSON.stringify({
+//     "title" : 'Community Development Grant',
+//     "summary":  'Empowering local communities through education and infrastructure development',
+//     'type': 'Business',
+//     'id' : 33
+//   }
+//   ) 
+// })
+// .then(response => response.json())
+// .then(data => console.log(data))
+// .catch(error => console.error('Error:', error));
+
+
