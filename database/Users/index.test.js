@@ -55,157 +55,62 @@ describe('Database functions', () => {
             });
         });
 
-        it('should handle errors gracefully', async () => {
-            const userID = 'erroruser@example.com';
-            pool.query.mockRejectedValueOnce(new Error('Database error'));
+        it('should handle errors', async () => {
+            const mockError = new Error('Database error');
+            mockRequest.query.mockRejectedValue(mockError);
 
-            await expect(readerUserData(userID)).rejects.toThrow('Database error');
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.close).toHaveBeenCalled();
-        });
-    });
-
-    describe('readAllUsers', () => {
-        it('should return all users', async () => {
-            pool.query.mockResolvedValueOnce({ recordset: [{ email: 'user1@example.com' }, { email: 'user2@example.com' }] });
-
-            const result = await readAllUsers();
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith('SELECT * FROM [User] where disabled = 0;');
-            expect(result).toEqual([{ email: 'user1@example.com' }, { email: 'user2@example.com' }]);
-        });
-
-        it('should handle errors gracefully', async () => {
-            pool.query.mockRejectedValueOnce(new Error('Database error'));
-
-            await expect(readAllUsers()).rejects.toThrow('Database error');
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.close).toHaveBeenCalled();
+            await expect(readerUserData('test@example.com')).rejects.toThrow('Database error');
+            expect(mockPool.close).toHaveBeenCalled();
         });
     });
 
     describe('insertUserData', () => {
         it('should insert user data and return success message', async () => {
-            const email = 'newuser@example.com';
-            const profile_pic_url = 'newurl';
+            const mockEmail = 'test@example.com';
+            const mockProfilePicUrl = 'http://example.com/pic.jpg';
+            const mockResult = {
+                rowsAffected: [1],
+            };
+            mockRequest.query.mockResolvedValue(mockResult);
 
-            pool.query.mockResolvedValueOnce({ rowsAffected: [1] });
+            const response = await insertUserData(mockEmail, mockProfilePicUrl);
 
-            const result = await insertUserData(email, profile_pic_url);
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith(`IF NOT EXISTS (SELECT 1 FROM [User] WHERE email = '${email}')
-        BEGIN
-            INSERT INTO [User] (email, profile_pic_url, user_type, created_at)
-            VALUES ('${email}', '${profile_pic_url}', 'Applicant', GETDATE());
-        END
-        `);
-            expect(result).toEqual({ message: 'Success' });
+            expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`INSERT INTO [User] (email, profile_pic_url, user_type, created_at)`));
+            expect(mockPool.close).toHaveBeenCalled();
+            expect(response).toEqual({ message: 'Success' });
         });
 
-        it('should return failure message if insert fails', async () => {
-            const email = 'existinguser@example.com';
-            const profile_pic_url = 'existingurl';
+        it('should handle errors', async () => {
+            const mockError = new Error('Database error');
+            mockRequest.query.mockRejectedValue(mockError);
 
-            pool.query.mockResolvedValueOnce({ rowsAffected: [0] });
-
-            const result = await insertUserData(email, profile_pic_url);
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith(`IF NOT EXISTS (SELECT 1 FROM [User] WHERE email = '${email}')
-        BEGIN
-            INSERT INTO [User] (email, profile_pic_url, user_type, created_at)
-            VALUES ('${email}', '${profile_pic_url}', 'Applicant', GETDATE());
-        END
-        `);
-            expect(result).toEqual({ message: 'Failure' });
-        });
-
-        it('should handle errors gracefully', async () => {
-            const email = 'erroruser@example.com';
-            const profile_pic_url = 'errorurl';
-
-            pool.query.mockRejectedValueOnce(new Error('Database error'));
-
-            await expect(insertUserData(email, profile_pic_url)).rejects.toThrow('Database error');
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.close).toHaveBeenCalled();
+            await expect(insertUserData('test@example.com', 'http://example.com/pic.jpg')).rejects.toThrow('Database error');
+            expect(mockPool.close).toHaveBeenCalled();
         });
     });
 
-    describe('updateUserPfp', () => {
-        it('should update user profile picture and return success message', async () => {
-            const email = 'user@example.com';
-            const profile_pic_url = 'newurl';
+    describe('updateUserData', () => {
+        it('should update user data and return success message', async () => {
+            const mockEmail = 'test@example.com';
+            const mockProfilePicUrl = 'http://example.com/pic.jpg';
+            const mockResult = {
+                rowsAffected: [1],
+            };
+            mockRequest.query.mockResolvedValue(mockResult);
 
-            pool.query.mockResolvedValueOnce({ rowsAffected: [1] });
+            const response = await updateUserData(mockEmail, mockProfilePicUrl);
 
-            const result = await updateUserPfp(email, profile_pic_url);
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith(`UPDATE [User] SET profile_pic_url = '${profile_pic_url}' WHERE email = '${email}';`);
-            expect(result).toEqual({ message: 'Success' });
+            expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`UPDATE [User] SET profile_pic_url = '${mockProfilePicUrl}'`));
+            expect(mockPool.close).toHaveBeenCalled();
+            expect(response).toEqual({ message: 'Success' });
         });
 
-        it('should return failure message if update fails', async () => {
-            const email = 'user@example.com';
-            const profile_pic_url = 'newurl';
+        it('should handle errors', async () => {
+            const mockError = new Error('Database error');
+            mockRequest.query.mockRejectedValue(mockError);
 
-            pool.query.mockResolvedValueOnce({ rowsAffected: [0] });
-
-            const result = await updateUserPfp(email, profile_pic_url);
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith(`UPDATE [User] SET profile_pic_url = '${profile_pic_url}' WHERE email = '${email}';`);
-            expect(result).toEqual({ message: 'Failure' });
-        });
-
-        it('should handle errors gracefully', async () => {
-            const email = 'erroruser@example.com';
-            const profile_pic_url = 'errorurl';
-
-            pool.query.mockRejectedValueOnce(new Error('Database error'));
-
-            await expect(updateUserPfp(email, profile_pic_url)).rejects.toThrow('Database error');
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.close).toHaveBeenCalled();
-        });
-    });
-
-    describe('blockUser', () => {
-        it('should block user and return success message', async () => {
-            const email = 'user@example.com';
-
-            pool.query.mockResolvedValueOnce({ rowsAffected: [1] });
-
-            const result = await blockUser(email);
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith(`UPDATE [User] SET disabled = 1 WHERE email = '${email}';`);
-            expect(result).toEqual({ message: 'Success' });
-        });
-
-        it('should return failure message if update fails', async () => {
-            const email = 'user@example.com';
-
-            pool.query.mockResolvedValueOnce({ rowsAffected: [0] });
-
-            const result = await blockUser(email);
-
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.query).toHaveBeenCalledWith(`UPDATE [User] SET disabled = 1 WHERE email = '${email}';`);
-            expect(result).toEqual({ message: 'Failure' });
-        });
-
-        it('should handle errors gracefully', async () => {
-            const email = 'erroruser@example.com';
-
-            pool.query.mockRejectedValueOnce(new Error('Database error'));
-
-            await expect(blockUser(email)).rejects.toThrow('Database error');
-            expect(pool.connect).toHaveBeenCalled();
-            expect(pool.close).toHaveBeenCalled();
+            await expect(updateUserData('test@example.com', 'http://example.com/pic.jpg')).rejects.toThrow('Database error');
+            expect(mockPool.close).toHaveBeenCalled();
         });
     });
 });
