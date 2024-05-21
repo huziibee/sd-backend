@@ -2,9 +2,13 @@ const { Router } = require("express");
 const { readerUserData, insertUserData, updateUserPfp, blockUser, readAllUsers } = require('../database/Users/index')
 const { insertFundingOpp,readFundOpps, readFundOppsForFM, updateFundingOpp } = require('../database/fundingOpps')
 
-const { insertFundingApp, readFundApps, updateFundingApp } = require('../database/fundApps')
+const multer = require('multer');
 
-const { insertApplicationsForFundingOpps, readapplicationsForFundingOpps, updateApplicationsForFundingOpps } = require('../database/applicationsForFundingOpps')
+const { insertFundingApp, readFundApps, updateFundingApp } = require('../database/fundApps')
+const { insertNotification, readNotifications, evaluateNotification } = require('../database/notifications')
+
+
+const { insertApplicationsForFundingOpps, readapplicationsForFundingOpps, updateApplicationsForFundingOpps, UploadToBlobStorage  } = require('../database/applicationsForFundingOpps')
 
 const router = Router();
 
@@ -180,5 +184,64 @@ router.put('/blockUser/', async (req, res) => {
 });
 
 
+router.post('/insertNotification/', async (req, res) => {
+    try {
+        // console.log("moop");
+        const userData = await insertNotification(req.body);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, 'uploads/')  // Ensure this directory exists
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + '-' + Date.now() + '-' + file.originalname)
+    }
+  });
+  
+  const upload = multer({ dest: 'uploads/' });
+
+  router.post('/upload', upload.single('file'), async (req, res) => {
+    try {
+      
+        const file = req.file;
+        console.log(file);
+        const userData = await UploadToBlobStorage(file);
+        console.log(userData);
+      res.send({"message": 'File uploaded successfully', "url" : userData} );
+    } catch (error) {
+      console.error('Error:', error);
+      res.status(500).send('Failed to upload the file.');
+    }
+  });
+
+router.put('/evaluateNotification/:id', async (req, res) => {
+    try {
+        // console.log(req.body);
+        const userData = await evaluateNotification(req.params.id);
+
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
+
+router.post('/readNotifications/:id', async (req, res) => {
+    try {
+        // console.log("moop");
+        const id = req.params.id;
+        const userData = await readNotifications(id);
+        res.status(200).json(userData); 
+    } catch (error) {
+        console.error(error);
+        res.status(500).send("Internal Server Error");
+    }
+});
 
 module.exports = router;

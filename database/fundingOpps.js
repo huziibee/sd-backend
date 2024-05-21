@@ -28,41 +28,35 @@ const { connectionString } = require('./config');
 
 
 async function readFundOpps(email) {
+    const pool = new ConnectionPool(connectionString);
     try {
         // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
         console.log("Reading rows from the funding_opportunities Table...");
-        const resultSet = await pool.request().query(`SELECT *
-        FROM [funding_opportunities]
-        WHERE approved = 1 AND end_date >= CAST(GETDATE() AS DATE) AND fund_manager_email != '${email}';
-        `);
+        const resultSet = await pool.request().query(`SELECT * FROM [funding_opportunities] WHERE approved = 1 AND end_date >= CAST(GETDATE() AS DATE) AND fund_manager_email != '${email}';`);
 
         // Close the connection pool
         await pool.close();
 
         return resultSet.recordset;
     } catch (err) {
+        await pool.close();
         console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
 
 async function readFundOppsForFM(email) {
+    // Create a new connection pool
+    const pool = new ConnectionPool(connectionString);
     try {
-        // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
+        
         await pool.connect();
 
         console.log("Reading rows from the funding_opportunities Table...");
         // console.log(email);
-        const resultSet = await pool.request().query(`SELECT *
-        FROM [funding_opportunities]
-        WHERE approved = 1 AND end_date >= CAST(GETDATE() AS DATE) and fund_manager_email = '${email}';
-        `);
-
-        
+        const resultSet = await pool.request().query(`SELECT * FROM [funding_opportunities] WHERE approved = 1 AND end_date >= CAST(GETDATE() AS DATE) and fund_manager_email = '${email}';`);
 
         // console.log(resultSet.recordset);
 
@@ -71,15 +65,16 @@ async function readFundOppsForFM(email) {
 
         return resultSet.recordset;
     } catch (err) {
+        await pool.close();
         console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
 
 async function insertFundingOpp(object) {
+    // Create a new connection pool
+    const pool = new ConnectionPool(connectionString);
     try {
-        // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
         console.log("Inserting data...");
@@ -120,15 +115,16 @@ async function insertFundingOpp(object) {
         console.log(returnObj);
         return returnObj;
     } catch (err) {
+        await pool.close();
         console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
 
 async function updateFundingOpp(object) {
+    // Create a new connection pool
+    const pool = new ConnectionPool(connectionString);
     try {
-        // Create a new connection pool
-        const pool = new ConnectionPool(connectionString);
         await pool.connect();
 
         console.log("Updating data...");
@@ -159,6 +155,7 @@ async function updateFundingOpp(object) {
         console.log(returnObj);
         return returnObj;
     } catch (err) {
+        await pool.close();
         console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
