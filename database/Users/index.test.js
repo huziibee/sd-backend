@@ -46,62 +46,62 @@ describe('Database operations', () => {
             expect(user).toEqual(mockResult.recordset[0]);
         });
 
-        // it('should handle errors', async () => {
-        //     const mockError = new Error('Database error');
-        //     mockRequest.query.mockRejectedValue(mockError);
+        it('should handle errors', async () => {
+            const mockError = new Error('Database error');
+            mockRequest.query.mockRejectedValue(mockError);
 
-        //     await expect(readerUserData('test@example.com')).rejects.toThrow('Database error');
-        //     expect(mockPool.close).toHaveBeenCalled();
-        // });
+            await expect(readerUserData('test@example.com')).rejects.toThrow('Database error');
+            expect(mockPool.close).toHaveBeenCalled();
+        });
     });
 
-    // describe('insertUserData', () => {
-    //     it('should insert user data and return success message', async () => {
-    //         const mockEmail = 'test@example.com';
-    //         const mockProfilePicUrl = 'http://example.com/pic.jpg';
-    //         const mockResult = {
-    //             rowsAffected: [1],
-    //         };
-    //         mockRequest.query.mockResolvedValue(mockResult);
+    describe('insertUserData', () => {
+        it('should insert user data and return success message', async () => {
+            const mockEmail = 'test@example.com';
+            const mockProfilePicUrl = 'http://example.com/pic.jpg';
+            const mockResult = {
+                rowsAffected: [1],
+            };
+            mockRequest.query.mockResolvedValue(mockResult);
 
-    //         const response = await insertUserData(mockEmail, mockProfilePicUrl);
+            const response = await insertUserData(mockEmail, mockProfilePicUrl);
 
-    //         expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`INSERT INTO [User] (email, profile_pic_url, user_type, created_at)`));
-    //         expect(mockPool.close).toHaveBeenCalled();
-    //         expect(response).toEqual({ message: 'Success' });
-    //     });
+            expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`INSERT INTO [User] (email, profile_pic_url, user_type, created_at)`));
+            expect(mockPool.close).toHaveBeenCalled();
+            expect(response).toEqual({ message: 'Success' });
+        });
 
-    //     it('should handle errors', async () => {
-    //         const mockError = new Error('Database error');
-    //         mockRequest.query.mockRejectedValue(mockError);
+        it('should handle errors', async () => {
+            const mockError = new Error('Database error');
+            mockRequest.query.mockRejectedValue(mockError);
 
-    //         await expect(insertUserData('test@example.com', 'http://example.com/pic.jpg')).rejects.toThrow('Database error');
-    //         expect(mockPool.close).toHaveBeenCalled();
-    //     });
-    // });
+            await expect(insertUserData('test@example.com', 'http://example.com/pic.jpg')).rejects.toThrow('Database error');
+            expect(mockPool.close).toHaveBeenCalled();
+        });
+    });
 
-    // describe('updateUserData', () => {
-    //     it('should update user data and return success message', async () => {
-    //         const mockEmail = 'test@example.com';
-    //         const mockProfilePicUrl = 'http://example.com/pic.jpg';
-    //         const mockResult = {
-    //             rowsAffected: [1],
-    //         };
-    //         mockRequest.query.mockResolvedValue(mockResult);
+    describe('updateUserData', () => {
+        it('should update user data and return success message', async () => {
+            const mockEmail = 'test@example.com';
+            const mockProfilePicUrl = 'http://example.com/pic.jpg';
+            const mockResult = {
+                rowsAffected: [1],
+            };
+            mockRequest.query.mockResolvedValue(mockResult);
 
-    //         const response = await updateUserData(mockEmail, mockProfilePicUrl);
+            const response = await updateUserData(mockEmail, mockProfilePicUrl);
 
-    //         expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`UPDATE [User] SET profile_pic_url = '${mockProfilePicUrl}'`));
-    //         expect(mockPool.close).toHaveBeenCalled();
-    //         expect(response).toEqual({ message: 'Success' });
-    //     });
+            expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`UPDATE [User] SET profile_pic_url = '${mockProfilePicUrl}'`));
+            expect(mockPool.close).toHaveBeenCalled();
+            expect(response).toEqual({ message: 'Success' });
+        });
 
-    //     it('should handle errors', async () => {
-    //         const mockError = new Error('Database error');
-    //         mockRequest.query.mockRejectedValue(mockError);
+        it('should handle errors', async () => {
+            const mockError = new Error('Database error');
+            mockRequest.query.mockRejectedValue(mockError);
 
-    //         await expect(updateUserData('test@example.com', 'http://example.com/pic.jpg')).rejects.toThrow('Database error');
-    //         expect(mockPool.close).toHaveBeenCalled();
-    //     });
-    // });
+            await expect(updateUserData('test@example.com', 'http://example.com/pic.jpg')).rejects.toThrow('Database error');
+            expect(mockPool.close).toHaveBeenCalled();
+        });
+    });
 });

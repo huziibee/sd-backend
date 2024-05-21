@@ -33,18 +33,7 @@ async function insertFundingApp(object) {
         console.log("Inserting data to fundersApps...");
 
         // Insert the row into the table
-        const resultSet = await pool.request().query(`
-        INSERT INTO fundersApps (applicant_email, justification)
-        SELECT applicant_email, justification
-        FROM (
-            SELECT '${object.email}' AS applicant_email, '${object.justification}' AS justification
-        ) AS tmp
-        WHERE NOT EXISTS (
-            SELECT 1 FROM fundersApps
-            WHERE applicant_email = '${object.email}'
-              AND justification = '${object.justification}'
-        ); 
-        `);
+        const resultSet = await pool.request().query(`INSERT INTO fundersApps (applicant_email, justification) SELECT applicant_email, justification FROM (SELECT '${object.email}' AS applicant_email, '${object.justification}' AS justification) AS tmp WHERE NOT EXISTS (SELECT 1 FROM fundersApps WHERE applicant_email = '${object.email}' AND justification = '${object.justification}');`);
 
         // Close the connection pool
         await pool.close();
@@ -78,11 +67,7 @@ async function updateFundingApp(object) {
         console.log("Updating fundersApps!!")
 
         // Update the row into the table
-        const resultSet = await pool.request().query(`
-        UPDATE [fundersApps]
-SET evaluated = 1
-WHERE applicant_email = '${object.email}';`);
-
+        const resultSet = await pool.request().query(`UPDATE [fundersApps] SET evaluated = 1 WHERE applicant_email = '${object.email}';`);
 
         // Close the connection pool
         
@@ -92,9 +77,8 @@ WHERE applicant_email = '${object.email}';`);
             returnObj.message = "Successfully Evaluated and rejected";
             
             
-            if (object.verdict == 'Approved'){
-                const response = await pool.request().query(`
-                UPDATE [User] SET user_type = 'Fund Manager' WHERE email = '${object.email}';`);
+            if (object.verdict == 'approved'){
+                const response = await pool.request().query(`UPDATE [User] SET user_type = 'Fund Manager' WHERE email = '${object.email}';`);
 
                 if (response.rowsAffected[0] == 1) {
                     returnObj.message = "Successfully Evaluted and approved";
