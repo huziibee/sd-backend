@@ -4,7 +4,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const history = require('connect-history-api-fallback');
-
 const applicationsRoute = require('./router/applications');
 const applyRoute = require('./router/apply');
 const authRoute = require('./router/auth');
@@ -14,7 +13,7 @@ const uploadRoute = require('./router/upload');
 const userRoute = require('./router/user');
 const reportsRoute = require('./router/reports');
 
-
+// 
 
 // const authRoute = require('./router/auth');
 
