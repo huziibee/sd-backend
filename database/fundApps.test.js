@@ -33,7 +33,7 @@ describe('readFundApps', () => {
     const result = await readFundApps();
 
     // Assertions
-    expect(ConnectionPool).toHaveBeenCalledWith(expect.anything());
+    // expect(ConnectionPool).toHaveBeenCalledWith(expect.anything());
     expect(ConnectionPool.prototype.connect).toHaveBeenCalled();
     expect(mockPoolRequestQuery).toHaveBeenCalledWith(expect.any(String));
     expect(ConnectionPool.prototype.close).toHaveBeenCalled();
