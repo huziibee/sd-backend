@@ -3,16 +3,20 @@ const { v4: uuidv4 } = require('uuid');
 const { generateToken } = require('../../middleware/token.js');
 const {
   readerUserData,
-  insertUserData,
   blockUser,
   readAllUsers,
   updateUserPfp
 } = require('./index.js');
+const sql = require('mssql');
 
 // Mock the necessary modules
 jest.mock('mssql');
 jest.mock('uuid');
 jest.mock('../../middleware/token.js');
+jest.mock('./index.js', () => ({
+  ...jest.requireActual('./index.js'),
+  generateToken: jest.fn()
+}));
 
 const mockConnectionPool = {
   connect: jest.fn(),
@@ -47,8 +51,12 @@ describe('Data Access Layer', () => {
   //       close: jest.fn(),
   //       connected: true
   //     };
-  //     sql.ConnectionPool.mockImplementation(() => mockPool);
-  //     generateToken.mockReturnValue('mock-token');
+  //     jest.mock('mssql', () => ({
+  //       ConnectionPool: jest.fn(() => mockPool)
+  //     }));
+  //     jest.mock('./index.js', () => ({
+  //       generateToken: jest.fn().mockReturnValue('mock-token')
+  //     }));
   //   });
   
   //   afterEach(() => {
@@ -58,7 +66,7 @@ describe('Data Access Layer', () => {
   //   it('should read user data and return it with a token if user exists', async () => {
   //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
   //     mockRequest.query.mockResolvedValueOnce({
-  //       recordset: [{ disabled: 0, username: 'testuser', profile_pic: 'url', user_type: 'Applicant' }]
+  //       recordset: [{ disabled: 0, username: 'Armando Abelho', profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid', user_type: 'Fund Manager' }]
   //     });
   
   //     const result = await readerUserData(mockParams);
@@ -66,16 +74,16 @@ describe('Data Access Layer', () => {
   //     expect(result).toEqual({
   //       message: 'Success',
   //       disabled: 0,
-  //       username: 'testuser',
-  //       profile_pic: 'url',
-  //       user_type: 'Applicant',
+  //       username: 'Armando Abelho',
+  //       profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
+  //       user_type: 'Fund Manager',
   //       token: 'mock-token'
   //     });
-  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Applicant' });
+  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Fund Manager' });
   //   });
   
   //   it('should insert a new user if the user does not exist', async () => {
-  //     const mockParams = { id: '123', name: 'newuser' };
+  //     const mockParams = {id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho'};
   //     mockRequest.query
   //       .mockResolvedValueOnce({ recordset: [] }) // No user found
   //       .mockResolvedValueOnce({ rowsAffected: [1] }); // User inserted
@@ -85,15 +93,15 @@ describe('Data Access Layer', () => {
   //     expect(result).toEqual({
   //       message: 'Success',
   //       profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
-  //       user_type: 'Applicant',
-  //       username: 'newuser',
+  //       user_type: 'Fund Manager',
+  //       username: 'Armando Abelho',
   //       token: 'mock-token'
   //     });
-  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Applicant' });
+  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Fund Manager' });
   //   });
   
   //   it('should throw an error if insert fails', async () => {
-  //     const mockParams = { id: '123', name: 'newuser' };
+  //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
   //     mockRequest.query
   //       .mockResolvedValueOnce({ recordset: [] }) // No user found
   //       .mockResolvedValueOnce({ rowsAffected: [0] }); // Insert failed
@@ -102,7 +110,7 @@ describe('Data Access Layer', () => {
   //   });
   
   //   it('should handle errors and close the pool', async () => {
-  //     const mockParams = { id: '123', name: 'testuser' };
+  //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
   //     mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
   
   //     await expect(readerUserData(mockParams)).rejects.toThrow('DB error');
@@ -139,38 +147,6 @@ describe('Data Access Layer', () => {
     });
   });
 
-  // describe('insertUserData', () => {
-  //   it('should insert user data and return success message', async () => {
-  //     const email = 'test@example.com';
-  //     const profile_pic_url = 'http://example.com/pic.jpg';
-
-  //     mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
-
-  //     const result = await insertUserData(email, profile_pic_url);
-
-  //     expect(result).toEqual({ message: 'Success' });
-  //   });
-
-  //   it('should return failure message if insert fails', async () => {
-  //     const email = 'test@example.com';
-  //     const profile_pic_url = 'http://example.com/pic.jpg';
-
-  //     mockRequest.query.mockResolvedValueOnce({ rowsAffected: [0] });
-
-  //     const result = await insertUserData(email, profile_pic_url);
-
-  //     expect(result).toEqual({ message: 'Failure' });
-  //   });
-
-  //   it('should handle errors and throw them', async () => {
-  //     const email = 'test@example.com';
-  //     const profile_pic_url = 'http://example.com/pic.jpg';
-
-  //     mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
-
-  //     await expect(insertUserData(email, profile_pic_url)).rejects.toThrow('DB error');
-  //   });
-  // });
 
   describe('updateUserPfp', () => {
     it('should update user profile picture and return success message', async () => {
