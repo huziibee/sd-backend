@@ -1,5 +1,5 @@
 const { Router } = require("express");
-const { insertUserData, updateUserPfp, blockUser, readAllUsers } = require('../database/Users/index')
+const { updateUserPfp, blockUser, readAllUsers } = require('../database/Users/index')
 const router = Router();
 
 const { authenticateToken } = require("../middleware/token");

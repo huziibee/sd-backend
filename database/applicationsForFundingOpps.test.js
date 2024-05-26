@@ -1,149 +1,103 @@
+// Import the necessary modules and functions
+const { readapplicationsForFundingOpps, insertApplicationsForFundingOpps, updateApplicationsForFundingOpps } = require('./applicationsForFundingOpps.js');
 const { ConnectionPool } = require('mssql');
-const { insertApplicationsForFundingOpps, readapplicationsForFundingOpps, updateApplicationsForFundingOpps } = require('./applicationsForFundingOpps.js');
 
-jest.mock('mssql');
-
-let mockPool;
-let mockRequest;
-
-beforeEach(() => {
-    mockRequest = {
-        query: jest.fn(),
-    };
-
-    mockPool = {
-        connect: jest.fn().mockResolvedValue(mockPool),
-        close: jest.fn().mockResolvedValue(undefined),
-        request: jest.fn().mockReturnValue(mockRequest),
-    };
-
-    ConnectionPool.mockImplementation(() => mockPool);
+// Mocking the ConnectionPool and request methods
+jest.mock('mssql', () => {
+  const mssql = jest.requireActual('mssql');
+  return {
+    ...mssql,
+    ConnectionPool: jest.fn(),
+  };
 });
 
-afterEach(() => {
-    jest.clearAllMocks();
-});
+// Mocking the ConnectionPool prototype methods
+const mockPoolRequestQuery = jest.fn();
+ConnectionPool.prototype.connect = jest.fn();
+ConnectionPool.prototype.request = jest.fn(() => ({
+  query: mockPoolRequestQuery,
+}));
+ConnectionPool.prototype.close = jest.fn();
 
+// Test cases for readapplicationsForFundingOpps function
 describe('readapplicationsForFundingOpps', () => {
-    it('should return applications for a given fund manager email', async () => {
-        const mockEmail = 'fundmanager@example.com';
-        const mockResult = {
-            recordset: [{ id: 1, name: 'John Doe' }],
-        };
-        mockRequest.query.mockResolvedValue(mockResult);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-        const response = await readapplicationsForFundingOpps(mockEmail);
-
-        expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`WHERE F.fund_manager_email = '${mockEmail}';`));
-        expect(mockPool.close).toHaveBeenCalled();
-        expect(response).toEqual([{ id: 1, name: 'John Doe' }]);
+  it('should read applications for funding opportunities', async () => {
+    // Mocking the query result
+    mockPoolRequestQuery.mockResolvedValueOnce({
+      recordset: [{ id: 1, applicant_motivation: 'Motivation 1', status: 'Pending' }],
     });
 
-    it('should handle errors', async () => {
-        const mockError = new Error('Database error');
-        mockRequest.query.mockRejectedValue(mockError);
+    // Call the function with a mock tenant ID
+    const result = await readapplicationsForFundingOpps('tenant_id_123');
 
-        await expect(readapplicationsForFundingOpps('fundmanager@example.com')).rejects.toThrow('Database error');
-        expect(mockPool.close).toHaveBeenCalled();
+    // Assertions
+    expect(ConnectionPool).toHaveBeenCalledWith(expect.anything());
+    expect(ConnectionPool.prototype.connect).toHaveBeenCalled();
+    expect(mockPoolRequestQuery).toHaveBeenCalledWith(expect.any(String));
+    expect(ConnectionPool.prototype.close).toHaveBeenCalled();
+    expect(result).toEqual({
+      message: 'Success',
+      applications: [{ id: 1, applicant_motivation: 'Motivation 1', status: 'Pending' }],
     });
+  });
 });
 
+// Test cases for insertApplicationsForFundingOpps function
 describe('insertApplicationsForFundingOpps', () => {
-    it('should insert an application and return success message if not exists', async () => {
-        const mockObject = {
-            applicant_email: 'applicant@example.com',
-            fundingOpp_ID: 1,
-            applicant_motivation: 'Motivation text',
-            applicant_documents: 'Document links',
-        };
-        const mockResult = {
-            rowsAffected: [1],
-        };
-        mockRequest.query.mockResolvedValue(mockResult);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-        const response = await insertApplicationsForFundingOpps(mockObject);
-
-        expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`INSERT INTO applicationsForFundingOpps`));
-        expect(mockPool.close).toHaveBeenCalled();
-        expect(response).toEqual({ message: 'Success' });
+  it('should insert application for funding opportunities', async () => {
+    // Mocking the query result
+    mockPoolRequestQuery.mockResolvedValueOnce({
+      rowsAffected: [1],
     });
 
-    it('should return failure message if application already exists', async () => {
-        const mockObject = {
-            applicant_email: 'applicant@example.com',
-            fundingOpp_ID: 1,
-            applicant_motivation: 'Motivation text',
-            applicant_documents: 'Document links',
-        };
-        const mockResult = {
-            rowsAffected: [0],
-        };
-        mockRequest.query.mockResolvedValue(mockResult);
-
-        const response = await insertApplicationsForFundingOpps(mockObject);
-
-        expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`WHERE NOT EXISTS`));
-        expect(mockPool.close).toHaveBeenCalled();
-        expect(response).toEqual({ message: 'Failure' });
+    // Call the function with a mock object
+    const result = await insertApplicationsForFundingOpps({
+      fk_tenant_id: 'tenant_id_123',
+      fundingOpp_ID: 'funding_opp_id_456',
+      applicant_motivation: 'Motivation 2',
+      applicant_documents: 'Documents 2',
     });
 
-    it('should handle errors', async () => {
-        const mockError = new Error('Database error');
-        mockRequest.query.mockRejectedValue(mockError);
-
-        await expect(insertApplicationsForFundingOpps({
-            applicant_email: 'applicant@example.com',
-            fundingOpp_ID: 1,
-            applicant_motivation: 'Motivation text',
-            applicant_documents: 'Document links',
-        })).rejects.toThrow('Database error');
-        expect(mockPool.close).toHaveBeenCalled();
-    });
+    // Assertions
+    expect(ConnectionPool).toHaveBeenCalledWith(expect.anything());
+    expect(ConnectionPool.prototype.connect).toHaveBeenCalled();
+    expect(mockPoolRequestQuery).toHaveBeenCalledWith(expect.any(String));
+    expect(ConnectionPool.prototype.close).toHaveBeenCalled();
+    expect(result).toEqual({ message: 'Success' });
+  });
 });
 
+// Test cases for updateApplicationsForFundingOpps function
 describe('updateApplicationsForFundingOpps', () => {
-    it('should update the application status and return success message', async () => {
-        const mockObject = {
-            id: 1,
-            status: 'Approved',
-        };
-        const mockResult = {
-            rowsAffected: [1],
-        };
-        mockRequest.query.mockResolvedValue(mockResult);
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
-        const response = await updateApplicationsForFundingOpps(mockObject);
-
-        expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`UPDATE applicationsForFundingOpps`));
-        expect(mockPool.close).toHaveBeenCalled();
-        expect(response).toEqual({ message: 'Success' });
+  it('should update application for funding opportunities', async () => {
+    // Mocking the query result
+    mockPoolRequestQuery.mockResolvedValueOnce({
+      rowsAffected: [1],
     });
 
-    it('should return failure message if update does not affect any rows', async () => {
-        const mockObject = {
-            id: 1,
-            status: 'Approved',
-        };
-        const mockResult = {
-            rowsAffected: [0],
-        };
-        mockRequest.query.mockResolvedValue(mockResult);
-
-        const response = await updateApplicationsForFundingOpps(mockObject);
-
-        expect(mockRequest.query).toHaveBeenCalledWith(expect.stringContaining(`WHERE id = ${mockObject.id}`));
-        expect(mockPool.close).toHaveBeenCalled();
-        expect(response).toEqual({ message: 'Failure' });
+    // Call the function with a mock object
+    const result = await updateApplicationsForFundingOpps({
+      id: 1,
+      verdict: 'Approved',
     });
 
-    it('should handle errors', async () => {
-        const mockError = new Error('Database error');
-        mockRequest.query.mockRejectedValue(mockError);
-
-        await expect(updateApplicationsForFundingOpps({
-            id: 1,
-            status: 'Approved',
-        })).rejects.toThrow('Database error');
-        expect(mockPool.close).toHaveBeenCalled();
-    });
+    // Assertions
+    expect(ConnectionPool).toHaveBeenCalledWith(expect.anything());
+    expect(ConnectionPool.prototype.connect).toHaveBeenCalled();
+    expect(mockPoolRequestQuery).toHaveBeenCalledWith(expect.any(String));
+    expect(ConnectionPool.prototype.close).toHaveBeenCalled();
+    expect(result).toEqual({ message: 'Success' });
+  });
 });

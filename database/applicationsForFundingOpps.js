@@ -3,8 +3,6 @@ require('dotenv').config();
 const {sql , ConnectionPool } = require('mssql');
 const { connectionString } = require('./config');
 
-const { v4: uuidv4 } = require('uuid');
-
 
 
 async function readapplicationsForFundingOpps (fk_tenant_id) {
@@ -13,7 +11,7 @@ async function readapplicationsForFundingOpps (fk_tenant_id) {
         // Create a new connection pool
         await pool.connect();
 
-        console.log("Reading rows from the applicationsForFundingOpps Table...");
+        // console.log("Reading rows from the applicationsForFundingOpps Table...");
         const resultSet = await pool.request().query(`
         SELECT A.*, U.username
         FROM applicationsForFundingOpps A
@@ -26,7 +24,7 @@ async function readapplicationsForFundingOpps (fk_tenant_id) {
         // Close the connection pool
         await pool.close();
 
-        console.log(resultSet.recordset);   
+        // console.log(resultSet.recordset);   
 
         let returnObj = { message: "Failure" };
 
@@ -38,7 +36,7 @@ async function readapplicationsForFundingOpps (fk_tenant_id) {
         return returnObj;
     } catch (err) {
         await pool.close();
-        console.error(err.message);
+        // console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
@@ -49,9 +47,9 @@ async function insertApplicationsForFundingOpps(object) {
         // Create a new connection pool
         await pool.connect();
 
-        console.log("Inserting data into applicationsForFundingOpps...");
+        // console.log("Inserting data into applicationsForFundingOpps...");
 
-        console.log(object);
+        // console.log(object);
 
         // Insert the row into the table
         const resultSet = await pool.request().query(`
@@ -76,11 +74,11 @@ async function insertApplicationsForFundingOpps(object) {
             returnObj.message = "Success";
         }
 
-        console.log(returnObj);
+        // console.log(returnObj);
         return returnObj;
     } catch (err) {
         await pool.close();
-        console.error(err.message);
+        // console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
@@ -91,7 +89,7 @@ async function updateApplicationsForFundingOpps(object) {
         // Create a new connection pool
         await pool.connect();
 
-        console.log("Updating data in applicationsForFundingOpps...");
+        // console.log("Updating data in applicationsForFundingOpps...");
 
         // Insert the row into the table
         const resultSet = await pool.request().query(`
@@ -109,11 +107,11 @@ async function updateApplicationsForFundingOpps(object) {
             returnObj.message = "Success";
         }
 
-        console.log(returnObj);
+        // console.log(returnObj);
         return returnObj;
     } catch (err) {
         await pool.close();
-        console.error(err.message);
+        // console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }

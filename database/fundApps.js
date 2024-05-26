@@ -10,7 +10,7 @@ async function readFundApps() {
         // Create a new connection pool
         await pool.connect();
 
-        console.log("Reading rows from the fundersApps Table...");
+        // console.log("Reading rows from the fundersApps Table...");
         const resultSet = await pool.request().query(`SELECT F.*, U.username AS username
         FROM fundersApps AS F
         JOIN [User] AS U ON F.fk_tenant_id = U.tenant_id
@@ -30,7 +30,7 @@ async function readFundApps() {
         return returnObj;
     } catch (err) {
         await pool.close();
-        console.error(err.message);
+        // console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
@@ -42,7 +42,7 @@ async function insertFundingApp(object) {
         // Create a new connection pool
         await pool.connect();
 
-        console.log("Inserting data to fundersApps...");
+        // console.log("Inserting data to fundersApps...");
 
         // Insert the row into the table
         const resultSet = await pool.request().query(`
@@ -66,11 +66,11 @@ async function insertFundingApp(object) {
             returnObj.message = "Success";
         }
 
-        console.log(returnObj);
+        // console.log(returnObj);
         return returnObj;
     } catch (err) {
         await pool.close();
-        console.error(err.message);
+        // console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
@@ -84,18 +84,18 @@ async function insertFundingApp(object) {
 async function updateFundingApp(object) {
     try {
 
-        // console.log("Updating fundersApps!!")
+        // // console.log("Updating fundersApps!!")
         // Create a new connection pool
         await pool.connect();
 
-        // console.log("Updating fundersApps!!")
+        // // console.log("Updating fundersApps!!")
 
-        // console.log(object.id);
+        // // console.log(object.id);
 
         // Update the row into the table
         const resultSet = await pool.request().query(`UPDATE [fundersApps] SET evaluated = 1 WHERE fk_tenant_id = '${object.id}';`);
 
-        // console.log("fsjb",resultSet);
+        // // console.log("fsjb",resultSet);
 
 
         // Close the connection pool
@@ -123,11 +123,11 @@ async function updateFundingApp(object) {
         }
         
         await pool.close();
-        console.log(returnObj);
+        // console.log(returnObj);
         return returnObj;
     } catch (err) {
         await pool.close();
-        console.error(err.message);
+        // console.error(err.message);
         throw err; // Re-throw the error to handle it in the caller
     }
 }
