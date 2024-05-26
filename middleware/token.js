@@ -7,23 +7,23 @@ function generateToken(id, role) {
     const payload = { id, role };
     const options = { expiresIn: '1h' }; // Token expiration time
     const token = jwt.sign(payload, secretKey, options);
-    console.log(token);
+    // console.log(token);
     return token;
 }
 
 function verifyToken(token) {
     try {
-        console.log(token);
+        // console.log(token);
         return jwt.verify(token, secretKey);
     } catch (err) {
-        console.error(err.message);
+        // console.error(err.message);
         return null;
     }
 }
 
 const authenticateToken = (req, res, next) => {
     const token = req.headers['authorization'] || req.query.token;
-    // console.log(token);
+    // // console.log(token);
     let response = { message: 'Unauthorized'}
     if (token) {
         
