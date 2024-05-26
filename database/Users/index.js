@@ -97,45 +97,45 @@ async function readAllUsers() {
     }
 }
 
-async function insertUserData(email, profile_pic_url) {
-    try {
-        // Connect to the database
+// async function insertUserData(email, profile_pic_url) {
+//     try {
+//         // Connect to the database
 
-        const poolConnection = await sql.connect(config);
+//         const poolConnection = await sql.connect(config);
 
-        // console.log("smurf", userExists)
+//         // console.log("smurf", userExists)
 
-        // Insert the row into the table
-
-        
-
-        console.log("Inserting!!")
-        const resultSet = await poolConnection.request().query(`IF NOT EXISTS (SELECT 1 FROM [User] WHERE email = '${email}')
-        BEGIN
-            INSERT INTO [User] (tenant_id, profile_pic_url, user_type, created_at)
-            VALUES ('${email}', '${profile_pic_url}', 'Applicant', GETDATE());
-        END
-        `);
-
-        // Close the connection
-        await poolConnection.close();
-
-        let returnObj = null;
-
-        if (resultSet.rowsAffected[0] == 1) {
-            returnObj = { "message" : "Success"};
-        }else{
-            returnObj = { "message" : "Failure"};
-        }
-        console.log(returnObj)
-        return returnObj;        
+//         // Insert the row into the table
 
         
-    } catch (err) {
-        console.error(err.message);
-        throw err; // Re-throw the error to handle it in the caller
-    }
-}
+
+//         console.log("Inserting!!")
+//         const resultSet = await poolConnection.request().query(`IF NOT EXISTS (SELECT 1 FROM [User] WHERE email = '${email}')
+//         BEGIN
+//             INSERT INTO [User] (tenant_id, profile_pic_url, user_type, created_at)
+//             VALUES ('${email}', '${profile_pic_url}', 'Applicant', GETDATE());
+//         END
+//         `);
+
+//         // Close the connection
+//         await poolConnection.close();
+
+//         let returnObj = null;
+
+//         if (resultSet.rowsAffected[0] == 1) {
+//             returnObj = { "message" : "Success"};
+//         }else{
+//             returnObj = { "message" : "Failure"};
+//         }
+//         console.log(returnObj)
+//         return returnObj;        
+
+        
+//     } catch (err) {
+//         console.error(err.message);
+//         throw err; // Re-throw the error to handle it in the caller
+//     }
+// }
 
 async function updateUserPfp(object) {
     try {
@@ -209,7 +209,6 @@ async function blockUser(object) {
 
 module.exports = {
     readerUserData,
-    insertUserData,
     blockUser,
     readAllUsers,
     updateUserPfp
