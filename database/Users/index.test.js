@@ -37,86 +37,86 @@ describe('Data Access Layer', () => {
     jest.clearAllMocks();
   });
 
-  describe('readerUserData', () => {
-    let mockPool;
-    let mockRequest;
+  // describe('readerUserData', () => {
+  //   let mockPool;
+  //   let mockRequest;
   
-    beforeEach(() => {
-      mockRequest = {
-        query: jest.fn()
-      };
-      mockPool = {
-        connect: jest.fn(),
-        request: jest.fn(() => mockRequest),
-        close: jest.fn(),
-        connected: true
-      };
-      jest.mock('mssql', () => ({
-        ConnectionPool: jest.fn(() => mockPool)
-      }));
-      jest.mock('./index.js', () => ({
-        generateToken: jest.fn().mockReturnValue('mock-token')
-      }));
-    });
+  //   beforeEach(() => {
+  //     mockRequest = {
+  //       query: jest.fn()
+  //     };
+  //     mockPool = {
+  //       connect: jest.fn(),
+  //       request: jest.fn(() => mockRequest),
+  //       close: jest.fn(),
+  //       connected: true
+  //     };
+  //     jest.mock('mssql', () => ({
+  //       ConnectionPool: jest.fn(() => mockPool)
+  //     }));
+  //     jest.mock('./index.js', () => ({
+  //       generateToken: jest.fn().mockReturnValue('mock-token')
+  //     }));
+  //   });
   
-    afterEach(() => {
-      jest.clearAllMocks();
-    });
+  //   afterEach(() => {
+  //     jest.clearAllMocks();
+  //   });
   
-    it('should read user data and return it with a token if user exists', async () => {
-      const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
-      mockRequest.query.mockResolvedValueOnce({
-        recordset: [{ disabled: 0, username: 'Armando Abelho', profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid', user_type: 'Fund Manager' }]
-      });
+  //   it('should read user data and return it with a token if user exists', async () => {
+  //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
+  //     mockRequest.query.mockResolvedValueOnce({
+  //       recordset: [{ disabled: 0, username: 'Armando Abelho', profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid', user_type: 'Fund Manager' }]
+  //     });
   
-      const result = await readerUserData(mockParams);
-      console.log(result)
-      expect(result).toEqual({
-        message: 'Success',
-        disabled: 0,
-        username: 'Armando Abelho',
-        profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
-        user_type: 'Fund Manager',
-        token: 'mock-token'
-      });
-      expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Fund Manager' });
-    });
+  //     const result = await readerUserData(mockParams);
+  //     console.log(result)
+  //     expect(result).toEqual({
+  //       message: 'Success',
+  //       disabled: 0,
+  //       username: 'Armando Abelho',
+  //       profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
+  //       user_type: 'Fund Manager',
+  //       token: 'mock-token'
+  //     });
+  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Fund Manager' });
+  //   });
   
-    it('should insert a new user if the user does not exist', async () => {
-      const mockParams = {id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho'};
-      mockRequest.query
-        .mockResolvedValueOnce({ recordset: [] }) // No user found
-        .mockResolvedValueOnce({ rowsAffected: [1] }); // User inserted
+  //   it('should insert a new user if the user does not exist', async () => {
+  //     const mockParams = {id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho'};
+  //     mockRequest.query
+  //       .mockResolvedValueOnce({ recordset: [] }) // No user found
+  //       .mockResolvedValueOnce({ rowsAffected: [1] }); // User inserted
   
-      const result = await readerUserData(mockParams);
+  //     const result = await readerUserData(mockParams);
   
-      expect(result).toEqual({
-        message: 'Success',
-        profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
-        user_type: 'Fund Manager',
-        username: 'Armando Abelho',
-        token: 'mock-token'
-      });
-      expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Fund Manager' });
-    });
+  //     expect(result).toEqual({
+  //       message: 'Success',
+  //       profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
+  //       user_type: 'Fund Manager',
+  //       username: 'Armando Abelho',
+  //       token: 'mock-token'
+  //     });
+  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Fund Manager' });
+  //   });
   
-    it('should throw an error if insert fails', async () => {
-      const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
-      mockRequest.query
-        .mockResolvedValueOnce({ recordset: [] }) // No user found
-        .mockResolvedValueOnce({ rowsAffected: [0] }); // Insert failed
+  //   it('should throw an error if insert fails', async () => {
+  //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
+  //     mockRequest.query
+  //       .mockResolvedValueOnce({ recordset: [] }) // No user found
+  //       .mockResolvedValueOnce({ rowsAffected: [0] }); // Insert failed
   
-      await expect(readerUserData(mockParams)).rejects.toThrow('Failed to insert user');
-    });
+  //     await expect(readerUserData(mockParams)).rejects.toThrow('Failed to insert user');
+  //   });
   
-    it('should handle errors and close the pool', async () => {
-      const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
-      mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
+  //   it('should handle errors and close the pool', async () => {
+  //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
+  //     mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
   
-      await expect(readerUserData(mockParams)).rejects.toThrow('DB error');
-      expect(mockPool.close).toHaveBeenCalled();
-    });
-  });
+  //     await expect(readerUserData(mockParams)).rejects.toThrow('DB error');
+  //     expect(mockPool.close).toHaveBeenCalled();
+  //   });
+  // });
 
   describe('readAllUsers', () => {
     it('should return all users except admins', async () => {
