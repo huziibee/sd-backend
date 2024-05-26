@@ -1,15 +1,15 @@
 module.exports = {
     collectCoverage: true,
-    coverageReporters: ['text', 'cobertura'],
+    coverageDirectory: 'coverage',
+    coverageReporters: ['lcov', 'text']
+    // coverageReporters: ['text', 'cobertura'],
 
-    // jest.config.json
 
-
-    "transform": {
-      "^.+\\.jsx?$": "babel-jest"
-    },
-    "moduleNameMapper": {
-      "\\.(css|less|scss|sass)$": "identity-obj-proxy"
-    }
+    // "transform": {
+    //   "^.+\\.jsx?$": "babel-jest"
+    // },
+    // "moduleNameMapper": {
+    //   "\\.(css|less|scss|sass)$": "identity-obj-proxy"
+    // }
   }
   
