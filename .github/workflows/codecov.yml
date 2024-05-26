@@ -3,10 +3,10 @@ name: CI/CD Pipeline
 on:
   push:
     branches:
-      - pramit
+      - main
   pull_request:
     branches:
-      - pramit
+      - main
 
 jobs:
   build:
