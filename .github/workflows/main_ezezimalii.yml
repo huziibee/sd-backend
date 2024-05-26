@@ -60,14 +60,6 @@ jobs:
           name: node-app
           path: release.zip
 
-      - name: Download artifact from test job
-        uses: actions/download-artifact@v2
-        with:
-          name: coverage
-
-      - name: Unzip artifact for coverage
-        run: unzip coverage.zip -d coverage
-
       - name: Login to Azure
         uses: azure/login@v1
         with:
