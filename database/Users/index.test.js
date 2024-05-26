@@ -33,134 +33,155 @@ describe('Data Access Layer', () => {
     jest.clearAllMocks();
   });
 
-//   describe('readerUserData', () => {
-//     it('should read user data and return it with a token if user exists', async () => {
-//       const mockParams = { id: '123', name: 'testuser' };
-//       mockRequest.query.mockResolvedValueOnce({
-//         recordset: [{ disabled: 0, username: 'testuser', profile_pic: 'url', user_type: 'Applicant' }]
-//       });
+  // describe('readerUserData', () => {
+  //   let mockPool;
+  //   let mockRequest;
+  
+  //   beforeEach(() => {
+  //     mockRequest = {
+  //       query: jest.fn()
+  //     };
+  //     mockPool = {
+  //       connect: jest.fn(),
+  //       request: jest.fn(() => mockRequest),
+  //       close: jest.fn(),
+  //       connected: true
+  //     };
+  //     sql.ConnectionPool.mockImplementation(() => mockPool);
+  //     generateToken.mockReturnValue('mock-token');
+  //   });
+  
+  //   afterEach(() => {
+  //     jest.clearAllMocks();
+  //   });
+  
+  //   it('should read user data and return it with a token if user exists', async () => {
+  //     const mockParams = { id: '350ed8f7-72ac-4ddb-92bc-1e8ef4cf705d', name: 'Armando Abelho' };
+  //     mockRequest.query.mockResolvedValueOnce({
+  //       recordset: [{ disabled: 0, username: 'testuser', profile_pic: 'url', user_type: 'Applicant' }]
+  //     });
+  
+  //     const result = await readerUserData(mockParams);
+  
+  //     expect(result).toEqual({
+  //       message: 'Success',
+  //       disabled: 0,
+  //       username: 'testuser',
+  //       profile_pic: 'url',
+  //       user_type: 'Applicant',
+  //       token: 'mock-token'
+  //     });
+  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Applicant' });
+  //   });
+  
+  //   it('should insert a new user if the user does not exist', async () => {
+  //     const mockParams = { id: '123', name: 'newuser' };
+  //     mockRequest.query
+  //       .mockResolvedValueOnce({ recordset: [] }) // No user found
+  //       .mockResolvedValueOnce({ rowsAffected: [1] }); // User inserted
+  
+  //     const result = await readerUserData(mockParams);
+  
+  //     expect(result).toEqual({
+  //       message: 'Success',
+  //       profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
+  //       user_type: 'Applicant',
+  //       username: 'newuser',
+  //       token: 'mock-token'
+  //     });
+  //     expect(generateToken).toHaveBeenCalledWith({ id: mockParams.id, role: 'Applicant' });
+  //   });
+  
+  //   it('should throw an error if insert fails', async () => {
+  //     const mockParams = { id: '123', name: 'newuser' };
+  //     mockRequest.query
+  //       .mockResolvedValueOnce({ recordset: [] }) // No user found
+  //       .mockResolvedValueOnce({ rowsAffected: [0] }); // Insert failed
+  
+  //     await expect(readerUserData(mockParams)).rejects.toThrow('Failed to insert user');
+  //   });
+  
+  //   it('should handle errors and close the pool', async () => {
+  //     const mockParams = { id: '123', name: 'testuser' };
+  //     mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
+  
+  //     await expect(readerUserData(mockParams)).rejects.toThrow('DB error');
+  //     expect(mockPool.close).toHaveBeenCalled();
+  //   });
+  // });
 
-//       const result = await readerUserData(mockParams);
+  describe('readAllUsers', () => {
+    it('should return all users except admins', async () => {
+      mockRequest.query.mockResolvedValueOnce({
+        recordset: [{ id: 1, username: 'user1' }, { id: 2, username: 'user2' }]
+      });
 
-//       expect(result).toEqual({
-//         message: 'Success',
-//         disabled: 0,
-//         username: 'testuser',
-//         profile_pic: 'url',
-//         user_type: 'Applicant',
-//         token: 'mock-token'
-//       });
-//       expect(generateToken).toHaveBeenCalledWith({ id: '123', role: 'Applicant' });
-//     });
+      const result = await readAllUsers();
 
-//     it('should insert a new user if the user does not exist', async () => {
-//       const mockParams = { id: '123', name: 'newuser' };
-//       mockRequest.query
-//         .mockResolvedValueOnce({ recordset: [] }) // No user found
-//         .mockResolvedValueOnce({ rowsAffected: [1] }); // User inserted
+      expect(result).toEqual({
+        users: [{ id: 1, username: 'user1' }, { id: 2, username: 'user2' }],
+        message: 'Success'
+      });
+    });
 
-//       const result = await readerUserData(mockParams);
+    it('should return failure message if no users found', async () => {
+      mockRequest.query.mockResolvedValueOnce({ recordset: [] });
 
-//       expect(result).toEqual({
-//         message: 'Success',
-//         profile_pic: 'https://cdn-icons-png.freepik.com/256/11419/11419168.png?semt=ais_hybrid',
-//         user_type: 'Applicant',
-//         username: 'newuser',
-//         token: 'mock-token'
-//       });
-//       expect(generateToken).toHaveBeenCalledWith({ id: '123', role: 'Applicant' });
-//     });
+      const result = await readAllUsers();
 
-//     it('should throw an error if insert fails', async () => {
-//       const mockParams = { id: '123', name: 'newuser' };
-//       mockRequest.query
-//         .mockResolvedValueOnce({ recordset: [] }) // No user found
-//         .mockResolvedValueOnce({ rowsAffected: [0] }); // Insert failed
+      expect(result).toEqual({ message: 'Failure' });
+    });
 
-//       await expect(readerUserData(mockParams)).rejects.toThrow('Failed to insert user');
-//     });
+    it('should handle errors and throw them', async () => {
+      mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
 
-//     it('should handle errors and close the pool', async () => {
-//       const mockParams = { id: '123', name: 'testuser' };
-//       mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
+      await expect(readAllUsers()).rejects.toThrow('DB error');
+    });
+  });
 
-//       await expect(readerUserData(mockParams)).rejects.toThrow('DB error');
-//       expect(mockConnectionPool.close).toHaveBeenCalled();
-//     });
-//   });
+  // describe('insertUserData', () => {
+  //   it('should insert user data and return success message', async () => {
+  //     const email = 'test@example.com';
+  //     const profile_pic_url = 'http://example.com/pic.jpg';
 
-//   describe('readAllUsers', () => {
-//     it('should return all users except admins', async () => {
-//       mockRequest.query.mockResolvedValueOnce({
-//         recordset: [{ id: 1, username: 'user1' }, { id: 2, username: 'user2' }]
-//       });
+  //     mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
 
-//       const result = await readAllUsers();
+  //     const result = await insertUserData(email, profile_pic_url);
 
-//       expect(result).toEqual({
-//         users: [{ id: 1, username: 'user1' }, { id: 2, username: 'user2' }],
-//         message: 'Success'
-//       });
-//     });
+  //     expect(result).toEqual({ message: 'Success' });
+  //   });
 
-//     it('should return failure message if no users found', async () => {
-//       mockRequest.query.mockResolvedValueOnce({ recordset: [] });
+  //   it('should return failure message if insert fails', async () => {
+  //     const email = 'test@example.com';
+  //     const profile_pic_url = 'http://example.com/pic.jpg';
 
-//       const result = await readAllUsers();
+  //     mockRequest.query.mockResolvedValueOnce({ rowsAffected: [0] });
 
-//       expect(result).toEqual({ message: 'Failure' });
-//     });
+  //     const result = await insertUserData(email, profile_pic_url);
 
-//     it('should handle errors and throw them', async () => {
-//       mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
+  //     expect(result).toEqual({ message: 'Failure' });
+  //   });
 
-//       await expect(readAllUsers()).rejects.toThrow('DB error');
-//     });
-//   });
+  //   it('should handle errors and throw them', async () => {
+  //     const email = 'test@example.com';
+  //     const profile_pic_url = 'http://example.com/pic.jpg';
 
-//   describe('insertUserData', () => {
-//     it('should insert user data and return success message', async () => {
-//       const email = 'test@example.com';
-//       const profile_pic_url = 'http://example.com/pic.jpg';
+  //     mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
 
-//       mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
-
-//       const result = await insertUserData(email, profile_pic_url);
-
-//       expect(result).toEqual({ message: 'Success' });
-//     });
-
-//     it('should return failure message if insert fails', async () => {
-//       const email = 'test@example.com';
-//       const profile_pic_url = 'http://example.com/pic.jpg';
-
-//       mockRequest.query.mockResolvedValueOnce({ rowsAffected: [0] });
-
-//       const result = await insertUserData(email, profile_pic_url);
-
-//       expect(result).toEqual({ message: 'Failure' });
-//     });
-
-//     it('should handle errors and throw them', async () => {
-//       const email = 'test@example.com';
-//       const profile_pic_url = 'http://example.com/pic.jpg';
-
-//       mockRequest.query.mockRejectedValueOnce(new Error('DB error'));
-
-//       await expect(insertUserData(email, profile_pic_url)).rejects.toThrow('DB error');
-//     });
-//   });
+  //     await expect(insertUserData(email, profile_pic_url)).rejects.toThrow('DB error');
+  //   });
+  // });
 
   describe('updateUserPfp', () => {
-    // it('should update user profile picture and return success message', async () => {
-    //   const mockObject = { id: '123', profile_pic: 'new-pic-url', username: 'newuser' };
+    it('should update user profile picture and return success message', async () => {
+      const mockObject = { id: '123', profile_pic: 'new-pic-url', username: 'newuser' };
 
-    //   mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
+      mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
 
-    //   const result = await updateUserPfp(mockObject);
+      const result = await updateUserPfp(mockObject);
 
-    //   expect(result).toEqual({ message: 'Success' });
-    // });
+      expect(result).toEqual({ message: 'Success' });
+    });
 
     it('should return failure message if update fails', async () => {
       const mockObject = { id: '123', profile_pic: 'new-pic-url', username: 'newuser' };
@@ -182,25 +203,25 @@ describe('Data Access Layer', () => {
   });
 
   describe('blockUser', () => {
-    // it('should block user and return success message', async () => {
-    //   const mockObject = { id: '123', disabled: true };
+    it('should block user and return success message', async () => {
+      const mockObject = { id: '123', disabled: true };
 
-    //   mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
+      mockRequest.query.mockResolvedValueOnce({ rowsAffected: [1] });
 
-    //   const result = await blockUser(mockObject);
+      const result = await blockUser(mockObject);
 
-    //   expect(result).toEqual({ message: 'Success' });
-    // });
+      expect(result).toEqual({ message: 'Success' });
+    });
 
-    // it('should return failure message if update fails', async () => {
-    //   const mockObject = { id: '123', disabled: true };
+    it('should return failure message if update fails', async () => {
+      const mockObject = { id: '123', disabled: true };
 
-    //   mockRequest.query.mockResolvedValueOnce({ rowsAffected: [0] });
+      mockRequest.query.mockResolvedValueOnce({ rowsAffected: [0] });
 
-    //   const result = await blockUser(mockObject);
+      const result = await blockUser(mockObject);
 
-    //   expect(result).toEqual({ message: 'Failure' });
-    // });
+      expect(result).toEqual({ message: 'Failure' });
+    });
 
     it('should handle errors and throw them', async () => {
       const mockObject = { id: '123', disabled: true };
